@@ -46,7 +46,7 @@ CREATE TABLE `comment` (
   `assign_id` int(10) UNSIGNED NOT NULL,
   `reply_id` int(11) DEFAULT NULL,
   `text` text NOT NULL,
-  `likes` int(11) DEFAULT NULL,
+  `likes` int(11) DEFAULT NULL, // наверное стоило ноль здесь сделать оставлю как было
   `time_created` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `time_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

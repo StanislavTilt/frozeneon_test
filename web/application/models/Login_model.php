@@ -20,14 +20,18 @@ class Login_model extends CI_Model {
     }
 
     /**
+     * @param array $loginData
      * @return User_model
      * @throws Exception
      */
-    public static function login(): User_model
+    public static function login(array $loginData): User_model
     {
-        // TODO: task 1, аутентификация
+        $user = User_model::find_user_by_email($loginData['email']);
 
-        self::start_session();
+        if(!$user->validatePassword($loginData['password'])) throw new Exception(validation_errors());
+
+        self::start_session($user->get_id());
+        return $user;
     }
 
     public static function start_session(int $user_id)
