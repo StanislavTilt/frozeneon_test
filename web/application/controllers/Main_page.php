@@ -2,6 +2,7 @@
 
 use Model\Boosterpack_model;
 use Model\Comment_model;
+use Model\Item_model;
 use Model\Login_model;
 use Model\Post_model;
 use Model\User_model;
@@ -152,10 +153,19 @@ class Main_page extends MY_Controller
 
     public function buy_boosterpack()
     {
-        $this->form_validation->set_rules("postId", "postId", "required|integer");
-        $this->form_validation->set_rules("replyId", "replayId", "nullable|integer"); // Проверка на существование в базе?
+        $this->form_validation->set_rules("boosterpack_id", "boosterpack_id", "required|integer");// Проверка на существование в базе?
 
         if(!$this->form_validation->run()) throw new Exception(validation_errors());
+
+        $user = User_model::get_user();
+        $boosterpack = Boosterpack_model::buyBoosterpack($user, $this->input->post('boosterpack_id'));
+
+        if(!isset($boosterpack))
+        {
+            return $this->response_error(System\Libraries\Core::RESPONSE_GENERIC_INTERNAL_ERROR. ' not enough money');
+        }
+
+        $item = $boosterpack->open($user);
 
         // Check user is authorize
         if ( ! User_model::is_logged())
@@ -163,7 +173,7 @@ class Main_page extends MY_Controller
             return $this->response_error(System\Libraries\Core::RESPONSE_GENERIC_NEED_AUTH);
         }
 
-        // TODO: task 5, покупка и открытие бустерпака
+        return $this->response_success(['item' => Item_model::preparation($item, 'default')]);
     }
 
     /**
