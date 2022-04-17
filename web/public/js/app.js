@@ -3,7 +3,7 @@ const STATUS_ERROR = 'error';
 var app = new Vue({
 	el: '#app',
 	data: {
-		login: '',
+        email: '',
 		pass: '',
 		post: false,
 		invalidLogin: false,
@@ -38,11 +38,18 @@ var app = new Vue({
 	},
 	methods: {
 		logout: function () {
-			console.log ('logout');
+            axios.post('/main_page/logout', form)
+                .then(function (response) {
+                    if(response.code === 200) {
+                        location.reload();
+                    }
+                }).catch(function (error){
+                	console.log(error.errors);
+				})
 		},
 		logIn: function () {
 			var self= this;
-			if(self.login === ''){
+			if(self.email === ''){
 				self.invalidLogin = true
 			}
 			else if(self.pass === ''){
@@ -54,7 +61,7 @@ var app = new Vue({
 				self.invalidPass = false
 
 				form = new FormData();
-				form.append("login", self.login);
+				form.append("email", self.email);
 				form.append("password", self.pass);
 
 				axios.post('/main_page/login', form)
@@ -80,7 +87,7 @@ var app = new Vue({
 					'/main_page/comment',
 					comment
 				).then(function () {
-
+					location.reload();
 				});
 			}
 

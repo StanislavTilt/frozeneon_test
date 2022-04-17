@@ -265,9 +265,10 @@ class User_model extends Emerald_model {
      * @return bool
      * @throws \ShadowIgniterException
      */
-    public function add_money(float $sum): bool
+    public function add_money(float $sum): bool //Можно обратиться к базе сразу и сократить колво запросов
     {
-        // TODO: task 4, добавление денег
+        $this->set_wallet_balance($this->get_wallet_balance() + $sum);
+        $this->set_wallet_total_refilled($this->get_wallet_total_refilled() + $sum);
 
         return TRUE;
     }
@@ -279,9 +280,14 @@ class User_model extends Emerald_model {
      * @return bool
      * @throws \ShadowIgniterException
      */
-    public function remove_money(float $sum): bool
+    public function remove_money(float $sum): bool // покупка лайков ? буду думать что да
     {
-        // TODO: task 5, списание денег
+        if($this->get_wallet_balance() < $sum)
+        {
+            return false;
+        }
+
+        $this->set_wallet_balance($this->get_wallet_balance() - $sum);
 
         return TRUE;
     }
@@ -346,7 +352,16 @@ class User_model extends Emerald_model {
      */
     public static function find_user_by_email(string $email): User_model
     {
-        // TODO: task 1, аутентификация
+        return static::transform_one(App::get_s()->from(self::CLASS_TABLE)->where('email', $email)->one());
+    }
+
+    /**
+     * @param string $password
+     * @return bool
+     */
+    public function validatePassword(string $password): bool
+    {
+        return $this->password == $password;
     }
 
     /**
@@ -445,6 +460,8 @@ class User_model extends Emerald_model {
 
             $o->personaname = $data->get_personaname();
             $o->avatarfull = $data->get_avatarfull();
+            $o->likes = $data->get_likes_balance();
+            $o->wallet_balance = $data->get_wallet_balance();
 
             $o->time_created = $data->get_time_created();
             $o->time_updated = $data->get_time_updated();
@@ -453,4 +470,13 @@ class User_model extends Emerald_model {
         return $o;
     }
 
+    public function buyLikes($likesCount)
+    {
+        if (!$this->remove_money($likesCount))
+        {
+            return false;
+        }
+        $this->set_likes_balance($this->get_likes_balance() + $likesCount);
+        return true;
+    }
 }

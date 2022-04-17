@@ -8,7 +8,7 @@ namespace System\Emerald;
 
 use ReflectionClass;
 
-class Emerald_enum {
+class Emerald_enum extends Transaction_type {
     public static function get_list(): array
     {
         return (new ReflectionClass(static::class))->getConstants();

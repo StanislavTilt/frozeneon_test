@@ -88,4 +88,44 @@ class Item_model extends Emerald_model {
 
         return App::get_s()->is_affected();
     }
+
+    public static function get_by_max_price(int $max_available_likes)
+    {
+        $items = App::get_s()->from(self::CLASS_TABLE)->where('price <= '.$max_available_likes)->many();
+        $item = $items[array_rand($items)];
+        return static::transform_one($item);
+    }
+
+    /**
+     * @param self $data
+     * @param string $preparation
+     * @return stdClass
+     * @throws Exception
+     */
+    public static function preparation(Item_model $data, string $preparation = 'default')
+    {
+        switch ($preparation)
+        {
+            case 'default':
+                return self::_preparation_default($data);
+            default:
+                throw new Exception('undefined preparation type');
+        }
+    }
+
+
+    /**
+     * @param Item_model $data
+     * @return stdClass
+     */
+    private static function _preparation_default(Item_model $data): stdClass
+    {
+        $o = new stdClass();
+
+        $o->id = $data->get_id();
+        $o->name = $data->get_name();
+        $o->price = $data->get_price();
+
+        return $o;
+    }
 }

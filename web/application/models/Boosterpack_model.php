@@ -168,24 +168,52 @@ class Boosterpack_model extends Emerald_model
         return static::transform_many(App::get_s()->from(self::CLASS_TABLE)->many());
     }
 
-    /**
-     * @return int
-     */
-    public function open(): int
+    public static function get_by_id(int $boosterpackId)
     {
-        // TODO: task 5, покупка и открытие бустерпака
+        return static::transform_one(App::get_s()->from(self::CLASS_TABLE)->where('id', $boosterpackId)->one());
+    }
+
+    public static function buyBoosterpack(User_model $user, $boosterpackId)
+    {
+        $boosterpack = self::get_by_id($boosterpackId);
+        if($user->remove_money($boosterpack->get_price()))
+        {
+            return $boosterpack;
+        }
+        return null;
+    }
+
+    /**
+     * @param User_model $user
+     * @return Item_model
+     */
+    public function open(User_model $user): Item_model
+    {
+        $max_available_likes = $this->countAbleItemPrice();
+        $item = $this->get_contains($max_available_likes);
+        Boosterpack_info_model::create([
+            'boosterpack_id' => $this->get_id(),
+            'item_id' => $item->get_id(),
+        ]);
+        $user->set_likes_balance($user->get_likes_balance() + $item->get_price());
+        $this->set_bank($this->get_bank() + $this->get_price() - $this->get_us() - $item->get_price());
+        return $item;
     }
 
     /**
      * @param int $max_available_likes
      *
-     * @return Item_model[]
+     * @return Item_model
      */
-    public function get_contains(int $max_available_likes): array
+    public function get_contains(int $max_available_likes): Item_model
     {
-        // TODO: task 5, покупка и открытие бустерпака
+        return Item_model::get_by_max_price($max_available_likes);
     }
 
+    public function countAbleItemPrice()
+    {
+        return $this->get_bank() + ($this->get_price() - $this->get_us());
+    }
 
     /**
      * @param Boosterpack_model $data
